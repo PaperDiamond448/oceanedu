@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 海洋信息实验教学平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', 'Microsoft Yahei', sans-serif;
+            background: linear-gradient(135deg, #0a1d37 0%, #1e3a8a 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        .wave-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg') repeat-x;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            opacity: 0.6;
+            background-size: 1000px 120px;
+        }
+        .wave:nth-child(2) {
+            bottom: -30px;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) -4s infinite;
+            opacity: 0.4;
+        }
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-25%); }
+            100% { transform: translateX(0); }
+        }
+        .sonar-wave {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(96, 165, 250, 0.4);
+            border-radius: 50%;
+            animation: sonar 2s ease-out infinite;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        .sonar-wave:nth-child(2) { animation-delay: 0.5s; }
+        .sonar-wave:nth-child(3) { animation-delay: 1s; }
+        @keyframes sonar {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(5);
+                opacity: 0;
+            }
+        }
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+        nav {
+            background: rgba(10, 29, 55, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        nav a, nav button {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        nav a:hover, nav button:hover {
+            color: #60a5fa;
+            transform: translateY(-2px);
+        }
+        nav a::after, nav button::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #60a5fa;
+            transition: width 0.3s ease;
+        }
+        nav a:hover::after, nav button:hover::after {
+            width: 100%;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .tech-btn {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .tech-btn:hover {
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        .tech-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        .tech-btn:hover::before {
+            left: 100%;
+        }
+        input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 5px rgba(96, 165, 250, 0.5);
+        }
+        label {
+            color: #e5e7eb;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #60a5fa;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="relative">
+    <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+    </div>
+
+    <nav class="sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-8">
+                <img src="https://logo.placehd.com/150x50?text=OceanEdu" alt="OceanEdu logo" class="h-8">
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-white font-medium">主页</a>
+                    <a href="index.html#courses" class="text-white font-medium">课程分类</a>
+                    <a href="index.html#features" class="text-white font-medium">平台特色</a>
+                    <a href="index.html#about" class="text-white font-medium">关于我们</a>
+                    <a href="personal_center.html" class="text-blue-400 font-medium">个人中心</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="logoutBtn" class="text-white font-medium">退出</button>
+                <div class="w-8 h-8 bg-white rounded-full"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-white mb-8" style="font-family: 'Orbitron', sans-serif;">个人中心</h1>
+        <div id="loading" class="text-center text-gray-300 mb-4">加载中...</div>
+
+        <section class="card p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">个人信息</h2>
+            <div class="grid gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block mb-2" for="username">用户名</label>
+                    <input type="text" id="username" value="示例用户" class="w-full px-4 py-2 rounded-lg focus:outline-none">
+                </div>
+                <div>
+                    <label class="block mb-2" for="email">邮箱</label>
+                    <input type="email" id="email" value="user@example.com" class="w-full px-4 py-2 rounded-lg focus:outline-none">
+                </div>
+                <div>
+                    <label class="block mb-2" for="password">密码</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 rounded-lg focus:outline-none" placeholder="请输入新密码">
+                </div>
+            </div>
+            <button id="saveProfile" class="mt-6 tech-btn">保存更改</button>
+        </section>
+
+        <section class="card p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">学习进度</h2>
+            <div class="space-y-6">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-white">课程1: 水下声学</h3>
+                        <span class="text-gray-300">0%</span>
+                    </div>
+                    <div class="progress-bar" id="course1-progress">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-white">课程2: 声纳工程</h3>
+                        <span class="text-gray-300">0%</span>
+                    </div>
+                    <div class="progress-bar" id="course2-progress">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#0a1d37] text-gray-400 text-center py-6">
+        <p>© 2025 海洋信息实验教学平台. 保留所有权利.</p>
+    </footer>
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        const saveProfileBtn = document.getElementById('saveProfile');
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('user_id');
+            alert('已退出登录');
+            window.location.href = 'index.html';
+        });
+
+        saveProfileBtn.addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            alert('个人信息已保存');
+        });
+
+        function updateCourseProgress() {
+            const loading = document.getElementById('loading');
+            const user_id = localStorage.getItem('user_id');
+            console.log('当前 user_id:', user_id);
+            if (!user_id) {
+                alert('请先登录或注册');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            fetch(`http://localhost:3001/user-completions?user_id=${user_id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP 错误: ${response.status} - ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(completions => {
+                    console.log('后端返回的 completions:', completions);
+                    const course1Completed = completions.some(completion => {
+                        console.log('检查 course1:', completion.course_id);
+                        return completion.course_id === 'course1';
+                    });
+                    if (course1Completed) {
+                        document.querySelector('#course1-progress .progress-fill').style.width = '100%';
+                        document.querySelector('#course1-progress .progress-fill').parentElement.previousElementSibling.querySelector('span').textContent = '100%';
+                    }
+                    const course2Completed = completions.some(completion => {
+                        console.log('检查 course2:', completion.course_id);
+                        return completion.course_id === 'course2';
+                    });
+                    if (course2Completed) {
+                        document.querySelector('#course2-progress .progress-fill').style.width = '100%';
+                        document.querySelector('#course2-progress .progress-fill').parentElement.previousElementSibling.querySelector('span').textContent = '100%';
+                    }
+                    loading.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('获取课程完成情况失败:', error);
+                    alert(`无法获取课程进度：${error.message}，请稍后重试`);
+                    loading.style.display = 'none';
+                });
+        }
+        updateCourseProgress();
+
+        function createBubbles() {
+            const waveBg = document.querySelector('.wave-bg');
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                const size = Math.random() * 10 + 5;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                waveBg.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        const sonarWaves = document.querySelectorAll('.sonar-wave');
+        document.addEventListener('mousemove', (e) => {
+            sonarWaves.forEach(wave => {
+                wave.style.left = `${e.clientX}px`;
+                wave.style.top = `${e.clientY}px`;
+            });
+        });
+    </script>
+</body>
+</html>

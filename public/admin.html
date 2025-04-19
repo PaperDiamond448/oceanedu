@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员统计 - 海洋信息实验教学平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 复用 course2.html 的样式 */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', 'Microsoft Yahei', sans-serif;
+            background: linear-gradient(135deg, #0a1d37 0%, #1e3a8a 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        .wave-bg { /* 波浪背景样式 */ }
+        .wave { /* 波浪动画样式 */ }
+        .sonar-wave { /* 声波效果样式 */ }
+        .bubble { /* 气泡效果样式 */ }
+        nav { /* 导航栏样式 */ }
+        .card { /* 卡片样式 */ }
+        /* 省略其他样式，复用 course2.html 的 CSS */
+    </style>
+</head>
+<body class="relative">
+    <!-- 动态背景 -->
+    <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-8">
+                <img src="https://logo.placehd.com/150x50?text=OceanEdu" alt="OceanEdu logo" class="h-8">
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-white font-medium">主页</a>
+                    <a href="personal_center.html" class="text-white font-medium">个人中心</a>
+                    <a href="admin.html" class="text-white font-medium">管理员统计</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="logoutBtn" class="text-white font-medium">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 统计数据展示 -->
+    <main class="container mx-auto px-4 py-8">
+        <section class="card p-6 rounded-lg mb-8">
+            <h1 class="text-3xl font-bold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">平台统计数据</h1>
+            <div id="stats" class="text-gray-300">
+                <p>注册人数：<span id="total-users">加载中...</span></p>
+                <h2 class="text-xl font-semibold text-white mt-4">课程完成情况</h2>
+                <ul id="course-completions" class="list-disc pl-6"></ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-[#0a1d37] text-gray-400 text-center py-6">
+        <p>© 2025 海洋信息实验教学平台. 保留所有权利.</p>
+    </footer>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 获取统计数据
+        fetch('http://localhost:3001/stats')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('total-users').textContent = data.total_users;
+        const completionsList = document.getElementById('course-completions');
+        if (data.course_completions.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = '暂无课程完成记录';
+            completionsList.appendChild(li);
+        } else {
+            data.course_completions.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `课程 ${item.course_id}: ${item.completions} 人完成`;
+                completionsList.appendChild(li);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('获取统计数据失败:', error);
+        document.getElementById('total-users').textContent = '获取失败';
+    });
+
+        // 退出登录
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.addEventListener('click', () => {
+            alert('已退出登录');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

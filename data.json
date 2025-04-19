@@ -1,0 +1,97 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "Alice",
+      "email": "alice@example.com",
+      "register_date": "2025-04-19T07:23:19.910Z"
+    },
+    {
+      "id": 2,
+      "username": "Bob",
+      "email": "bob@example.com",
+      "register_date": "2025-04-19T07:26:54.481Z"
+    },
+    {
+      "id": 3,
+      "username": "Kunkun123",
+      "email": "2785373961@qq.com",
+      "register_date": "2025-04-19T07:49:57.608Z"
+    },
+    {
+      "id": 4,
+      "username": "123",
+      "email": "2785473961@qq.com",
+      "register_date": "2025-04-19T08:09:13.369Z"
+    },
+    {
+      "id": 5,
+      "username": "kunkun123",
+      "email": "2785373961@qq.com",
+      "register_date": "2025-04-19T08:23:42.906Z"
+    },
+    {
+      "id": 6,
+      "username": "123",
+      "email": "123123123@qq.com",
+      "register_date": "2025-04-19T08:44:28.445Z"
+    }
+  ],
+  "course_completions": [
+    {
+      "user_id": 1,
+      "course_id": "course2",
+      "completion_date": "2025-04-19T07:25:34.152Z"
+    },
+    {
+      "user_id": 2,
+      "course_id": "course2",
+      "completion_date": "2025-04-19T07:27:01.514Z"
+    },
+    {
+      "user_id": 4,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:09:22.585Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:24:01.881Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:24:10.955Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course2",
+      "completion_date": "2025-04-19T08:28:51.159Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:28:57.645Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course2",
+      "completion_date": "2025-04-19T08:29:06.196Z"
+    },
+    {
+      "user_id": 5,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:32:57.600Z"
+    },
+    {
+      "user_id": 6,
+      "course_id": "course1",
+      "completion_date": "2025-04-19T08:44:47.554Z"
+    },
+    {
+      "user_id": 6,
+      "course_id": "course2",
+      "completion_date": "2025-04-19T08:45:10.776Z"
+    }
+  ]
+}

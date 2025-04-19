@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海洋信息实验教学平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', 'Microsoft Yahei', sans-serif;
+            background: linear-gradient(135deg, #0a1d37 0%, #1e3a8a 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        /* 动态背景容器 */
+        .wave-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+        }
+        /* 波浪效果 */
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg') repeat-x;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            opacity: 0.6;
+            background-size: 1000px 120px;
+        }
+        .wave:nth-child(2) {
+            bottom: -30px;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) -4s infinite;
+            opacity: 0.4;
+        }
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-25%); }
+            100% { transform: translateX(0); }
+        }
+        /* 声波传播效果（跟随鼠标） */
+        .sonar-wave {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(96, 165, 250, 0.4);
+            border-radius: 50%;
+            animation: sonar 2s ease-out infinite;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        .sonar-wave:nth-child(2) { animation-delay: 0.5s; }
+        .sonar-wave:nth-child(3) { animation-delay: 1s; }
+        @keyframes sonar {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(5);
+                opacity: 0;
+            }
+        }
+        /* 漂浮粒子效果（模拟气泡） */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+        /* 导航栏科技感样式 */
+        nav {
+            background: rgba(10, 29, 55, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        nav a, nav button {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        nav a:hover, nav button:hover {
+            color: #60a5fa;
+            transform: translateY(-2px);
+        }
+        nav a::after, nav button::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #60a5fa;
+            transition: width 0.3s ease;
+        }
+        nav a:hover::after, nav button:hover::after {
+            width: 100%;
+        }
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        /* 课程卡片样式（添加缩放效果） */
+        .course-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .course-card img {
+            transition: transform 0.3s ease;
+        }
+        .course-card:hover img {
+            transform: scale(1.05);
+        }
+        /* 按钮科技感样式 */
+        .tech-btn {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .tech-btn:hover {
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        .tech-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        .tech-btn:hover::before {
+            left: 100%;
+        }
+        /* 课程封面样式 */
+        .course-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+        .modal-content input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e5e7eb;
+            transition: all 0.3s ease;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        .modal-content input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 5px rgba(96, 165, 250, 0.5);
+            outline: none;
+        }
+        .modal-content label {
+            color: #e5e7eb;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            color: #e5e7eb;
+            cursor: pointer;
+        }
+        /* 渐变文本 */
+        .gradient-text {
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        a {
+            color: #60a5fa;
+        }
+        a:hover {
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- 动态背景 -->
+    <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-8">
+                <img src="https://logo.placehd.com/150x50?text=OceanEdu" alt="OceanEdu logo" class="h-8">
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-blue-400 font-medium">主页</a>
+                    <a href="#courses" class="text-white font-medium">课程分类</a>
+                    <a href="#features" class="text-white font-medium">平台特色</a>
+                    <a href="#about" class="text-white font-medium">关于我们</a>
+                    <a href="personal_center.html" class="text-white font-medium">个人中心</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="authBtn" class="text-white font-medium">登录</button>
+                <div class="w-8 h-8 bg-white rounded-full"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 登录/注册弹窗 -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">×</span>
+            <h2 class="text-2xl font-semibold text-white mb-6 text-center" style="font-family: 'Orbitron', sans-serif;" id="modalTitle">登录</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2 text-left" for="modalUsername">用户名</label>
+                    <input type="text" id="modalUsername" class="w-full px-4 py-2 rounded-lg focus:outline-none" placeholder="请输入用户名">
+                </div>
+                <div>
+                    <label class="block mb-2 text-left" for="modalEmail">邮箱</label>
+                    <input type="email" id="modalEmail" class="w-full px-4 py-2 rounded-lg focus:outline-none" placeholder="请输入邮箱">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="modalLoginBtn" class="flex-1 tech-btn">登录</button>
+                    <button id="modalRegisterBtn" class="flex-1 tech-btn">注册</button>
+                </div>
+                <p class="text-center text-gray-300 text-sm">
+                    <span id="toggleModeText">还没有账号？ </span>
+                    <a href="#" id="toggleModeLink" class="text-blue-400 hover:underline">立即注册</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 英雄区 -->
+    <section class="container mx-auto px-4 py-16 text-center">
+        <h1 class="text-5xl font-bold mb-4 gradient-text" style="font-family: 'Orbitron', sans-serif;">
+            海洋信息实验教学平台
+        </h1>
+        <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            探索海洋信息的奥秘，学习水下声学与声纳工程，体验交互式实验教学。
+        </p>
+        <a href="#courses" class="inline-block tech-btn">立即探索</a>
+    </section>
+
+    <!-- 课程分类 -->
+    <section id="courses" class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-white text-center mb-12" style="font-family: 'Orbitron', sans-serif;">课程分类</h2>
+        <div class="grid gap-8 md:grid-cols-2">
+            <div class="course-card rounded-lg overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="水下声学" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">水下声学</h3>
+                    <p class="text-gray-300 mb-4">学习声音在水中的传播原理，探索直接路径、反射路径和传播损耗的计算方法。</p>
+                    <a href="course1.html" class="inline-block tech-btn">开始学习</a>
+                </div>
+            </div>
+            <div class="course-card rounded-lg overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="声纳工程" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">声纳工程</h3>
+                    <p class="text-gray-300 mb-4">掌握声纳系统的设计与操作，分析不同信号类型的性能和检测理论。</p>
+                    <a href="course2.html" class="inline-block tech-btn">开始学习</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 平台特色 -->
+    <section id="features" class="container mx-auto px-4 py-16 bg-gradient-to-b from-transparent to-[#0a1d37]">
+        <h2 class="text-3xl font-bold text-white text-center mb-12" style="font-family: 'Orbitron', sans-serif;">平台特色</h2>
+        <div class="grid gap-8 md:grid-cols-3">
+            <div class="text-center">
+                <div class="text-5xl text-blue-400 mb-4">🌊</div>
+                <h3 class="text-xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">交互式实验</h3>
+                <p class="text-gray-300">通过仿真实验直观理解海洋信息原理，实时调整参数并观察结果。</p>
+            </div>
+            <div class="text-center">
+                <div class="text-5xl text-blue-400 mb-4">📊</div>
+                <h3 class="text-xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">可视化教学</h3>
+                <p class="text-gray-300">结合动态图表和动画展示，帮助学生深入理解复杂概念。</p>
+            </div>
+            <div class="text-center">
+                <div class="text-5xl text-blue-400 mb-4">🖥️</div>
+                <h3 class="text-xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">学习进度跟踪</h3>
+                <p class="text-gray-300">实时记录学习进度，提供个性化学习建议和反馈。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我们 -->
+    <section id="about" class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-white text-center mb-12" style="font-family: 'Orbitron', sans-serif;">关于我们</h2>
+        <div class="max-w-3xl mx-auto text-center">
+            <p class="text-gray-300 mb-4">
+                海洋信息实验教学平台致力于为学生和研究者提供一个交互式的学习环境，帮助他们掌握海洋信息领域的核心知识和技能。
+                我们通过先进的仿真技术和可视化工具，让学习过程更加直观和高效。
+            </p>
+            <a href="#" class="inline-block tech-btn">联系我们</a>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-[#0a1d37] text-gray-400 text-center py-6">
+        <p>© 2025 海洋信息实验教学平台. 保留所有权利.</p>
+    </footer>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 动态更新导航栏
+        function updateNav() {
+            const authBtn = document.getElementById('authBtn');
+            const user_id = localStorage.getItem('user_id');
+            if (user_id) {
+                authBtn.textContent = '退出';
+                authBtn.onclick = () => {
+                    localStorage.removeItem('user_id');
+                    alert('已退出登录');
+                    updateNav();
+                };
+            } else {
+                authBtn.textContent = '登录';
+                authBtn.onclick = showModal;
+            }
+        }
+
+        // 显示弹窗
+        const modal = document.getElementById('authModal');
+        const closeBtn = document.querySelector('.close-btn');
+        const modalTitle = document.getElementById('modalTitle');
+        const toggleModeLink = document.getElementById('toggleModeLink');
+        const toggleModeText = document.getElementById('toggleModeText');
+        const modalLoginBtn = document.getElementById('modalLoginBtn');
+        const modalRegisterBtn = document.getElementById('modalRegisterBtn');
+        let isLoginMode = true;
+
+        function showModal() {
+            modal.style.display = 'flex';
+            isLoginMode = true;
+            updateModalContent();
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            modal.style.display = 'none';
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalEmail').value = '';
+        }
+
+        // 更新弹窗内容（登录/注册模式切换）
+        function updateModalContent() {
+            if (isLoginMode) {
+                modalTitle.textContent = '登录';
+                modalLoginBtn.style.display = 'block';
+                modalRegisterBtn.style.display = 'none';
+                toggleModeText.textContent = '还没有账号？ ';
+                toggleModeLink.textContent = '立即注册';
+            } else {
+                modalTitle.textContent = '注册';
+                modalLoginBtn.style.display = 'none';
+                modalRegisterBtn.style.display = 'block';
+                toggleModeText.textContent = '已有账号？ ';
+                toggleModeLink.textContent = '立即登录';
+            }
+        }
+
+        // 切换登录/注册模式
+        toggleModeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            updateModalContent();
+        });
+
+        // 关闭弹窗事件
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // 登录逻辑
+        modalLoginBtn.addEventListener('click', () => {
+            const user_id = localStorage.getItem('user_id');
+            if (user_id) {
+                alert('您已登录！');
+                closeModal();
+                window.location.href = 'personal_center.html';
+            } else {
+                alert('请先注册！');
+                isLoginMode = false;
+                updateModalContent();
+            }
+        });
+
+        // 注册逻辑
+        modalRegisterBtn.addEventListener('click', () => {
+            const username = document.getElementById('modalUsername').value;
+            const email = document.getElementById('modalEmail').value;
+
+            if (!username || !email) {
+                alert('用户名和邮箱不能为空！');
+                return;
+            }
+
+            fetch('http://localhost:3001/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.setItem('user_id', data.user_id);
+                    alert('注册成功！');
+                    closeModal();
+                    updateNav();
+                    window.location.href = 'personal_center.html';
+                })
+                .catch(error => {
+                    console.error('注册失败:', error);
+                    alert('注册失败，请重试！');
+                });
+        });
+
+        // 页面加载时更新导航栏
+        document.addEventListener('DOMContentLoaded', updateNav);
+
+        // 生成漂浮粒子（气泡）
+        function createBubbles() {
+            const waveBg = document.querySelector('.wave-bg');
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                const size = Math.random() * 10 + 5;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                waveBg.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        // 声波环跟随鼠标
+        const sonarWaves = document.querySelectorAll('.sonar-wave');
+        document.addEventListener('mousemove', (e) => {
+            sonarWaves.forEach(wave => {
+                wave.style.left = `${e.clientX}px`;
+                wave.style.top = `${e.clientY}px`;
+            });
+        });
+    </script>
+</body>
+</html>

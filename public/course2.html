@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>声纳工程课程 - 海洋信息实验教学平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', 'Microsoft Yahei', sans-serif;
+            background: linear-gradient(135deg, #0a1d37 0%, #1e3a8a 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        /* 动态背景容器 */
+        .wave-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+        }
+        /* 波浪效果 */
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg') repeat-x;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            opacity: 0.6;
+            background-size: 1000px 120px;
+        }
+        .wave:nth-child(2) {
+            bottom: -30px;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) -4s infinite;
+            opacity: 0.4;
+        }
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-25%); }
+            100% { transform: translateX(0); }
+        }
+        /* 声波传播效果（跟随鼠标） */
+        .sonar-wave {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(96, 165, 250, 0.4);
+            border-radius: 50%;
+            animation: sonar 2s ease-out infinite;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        .sonar-wave:nth-child(2) { animation-delay: 0.5s; }
+        .sonar-wave:nth-child(3) { animation-delay: 1s; }
+        @keyframes sonar {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(5);
+                opacity: 0;
+            }
+        }
+        /* 漂浮粒子效果（模拟气泡） */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+        /* 导航栏科技感样式 */
+        nav {
+            background: rgba(10, 29, 55, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        nav a, nav button {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        nav a:hover, nav button:hover {
+            color: #60a5fa;
+            transform: translateY(-2px);
+        }
+        nav a::after, nav button::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #60a5fa;
+            transition: width 0.3s ease;
+        }
+        nav a:hover::after, nav button:hover::after {
+            width: 100%;
+        }
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        /* 按钮科技感样式 */
+        .tech-btn {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .tech-btn:hover {
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        .tech-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        .tech-btn:hover::before {
+            left: 100%;
+        }
+        /* 步骤卡片样式 */
+        .step-card {
+            border-left: 4px solid #60a5fa;
+            padding-left: 1rem;
+        }
+        /* 饼图样式 */
+        .pie-chart {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #60a5fa 0% 35%, /* 优秀 */
+                #ef4444 35% 60%, /* 达标 */
+                rgba(255, 255, 255, 0.2) 60% 100% /* 未达标 */
+            );
+        }
+        /* 星星评分 */
+        svg {
+            fill: #ef4444;
+        }
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+        .modal-content input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e5e7eb;
+            transition: all 0.3s ease;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        .modal-content input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 5px rgba(96, 165, 250, 0.5);
+            outline: none;
+        }
+        .modal-content label {
+            color: #e5e7eb;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            color: #e5e7eb;
+            cursor: pointer;
+        }
+        a {
+            color: #60a5fa;
+        }
+        a:hover {
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- 动态背景 -->
+    <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+        <div class="sonar-wave"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-8">
+                <img src="https://logo.placehd.com/150x50?text=OceanEdu" alt="OceanEdu logo" class="h-8">
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-white font-medium">主页</a>
+                    <a href="index.html#courses" class="text-white font-medium">课程分类</a>
+                    <a href="index.html#features" class="text-white font-medium">平台特色</a>
+                    <a href="index.html#about" class="text-white font-medium">关于我们</a>
+                    <a href="personal_center.html" class="text-white font-medium">个人中心</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="authBtn" class="text-white font-medium">登录</button>
+                <div class="w-8 h-8 bg-white rounded-full"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 登录/注册弹窗 -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">×</span>
+            <h2 class="text-2xl font-semibold text-white mb-6 text-center" style="font-family: 'Orbitron', sans-serif;" id="modalTitle">登录</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2 text-left" for="modalUsername">用户名</label>
+                    <input type="text" id="modalUsername" class="w-full px-4 py-2 rounded-lg focus:outline-none" placeholder="请输入用户名">
+                </div>
+                <div>
+                    <label class="block mb-2 text-left" for="modalEmail">邮箱</label>
+                    <input type="email" id="modalEmail" class="w-full px-4 py-2 rounded-lg focus:outline-none" placeholder="请输入邮箱">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="modalLoginBtn" class="flex-1 tech-btn">登录</button>
+                    <button id="modalRegisterBtn" class="flex-1 tech-btn">注册</button>
+                </div>
+                <p class="text-center text-gray-300 text-sm">
+                    <span id="toggleModeText">还没有账号？ </span>
+                    <a href="#" id="toggleModeLink" class="text-blue-400 hover:underline">立即注册</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 课程标题和简介 -->
+        <section class="card p-6 rounded-lg mb-8">
+            <h1 class="text-3xl font-bold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">声纳工程课程</h1>
+            <p class="text-gray-300 mb-4">本课程深入探讨声纳系统的设计与操作原理，包括信号处理、目标检测理论和声纳性能分析。学生将通过仿真实验，学习不同信号类型（如连续波和脉冲信号）的性能，并掌握声纳系统在水下环境中的应用技巧。</p>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-400">课程时长：约1.5小时</span>
+                <span class="text-gray-400">难度：中级</span>
+            </div>
+            <a href="experiment_sonar.html">
+                <button id="startExperiment" class="mt-6 tech-btn">开始实验</button>
+            </a>
+        </section>
+
+        <!-- 课程评价与统计 -->
+        <section class="card p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">课程评价与统计</h2>
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex-1 mb-4 md:mb-0">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div>
+                            <div class="flex items-center">
+                                <span class="text-3xl font-bold text-white mr-2">4.7</span>
+                                <div class="flex">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.357 2.438a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.539 1.118l-3.357-2.438a1 1 0 00-1.175 0l-3.357 2.438c-.784.57-1.838-.197-1.539-1.118l1.287-3.97a1 1 0 00-.364-1.118L2.236 9.397c-.783-.57-.381-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.97z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.357 2.438a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.539 1.118l-3.357-2.438a1 1 0 00-1.175 0l-3.357 2.438c-.784.57-1.838-.197-1.539-1.118l1.287-3.97a1 1 0 00-.364-1.118L2.236 9.397c-.783-.57-.381-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.97z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.357 2.438a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.539 1.118l-3.357-2.438a1 1 0 00-1.175 0l-3.357 2.438c-.784.57-1.838-.197-1.539-1.118l1.287-3.97a1 1 0 00-.364-1.118L2.236 9.397c-.783-.57-.381-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.97z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.357 2.438a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.539 1.118l-3.357-2.438a1 1 0 00-1.175 0l-3.357 2.438c-.784.57-1.838-.197-1.539-1.118l1.287-3.97a1 1 0 00-.364-1.118L2.236 9.397c-.783-.57-.381-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.97z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.357 2.438a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.539 1.118l-3.357-2.438a1 1 0 00-1.175 0l-3.357 2.438c-.784.57-1.838-.197-1.539-1.118l1.287-3.97a1 1 0 00-.364-1.118L2.236 9.397c-.783-.57-.381-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.97z"/></svg>
+                                </div>
+                            </div>
+                            <p class="text-gray-400 text-sm">150 人评价 <span class="text-blue-400">></span></p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-300 text-sm">
+                        <div class="flex items-center">
+                            <span class="mr-2">累计访问</span>
+                            <span class="font-semibold">19876</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="mr-2">累计学习</span>
+                            <span class="font-semibold">1800</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="mr-2">累计完成</span>
+                            <span class="font-semibold">900</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="mr-2">完成率</span>
+                            <span class="font-semibold">50%</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="mr-2">累计考核认证</span>
+                            <span class="font-semibold">85%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="pie-chart"></div>
+                    <div>
+                        <p class="text-white font-semibold mb-2">投人次 投人教</p>
+                        <div class="text-sm">
+                            <p><span class="inline-block w-4 h-4 bg-blue-400 mr-2"></span>优秀 35%</p>
+                            <p><span class="inline-block w-4 h-4 bg-red-500 mr-2"></span>达标 25%</p>
+                            <p><span class="inline-block w-4 h-4 bg-gray-300 mr-2"></span>未达标 40%</p>
+                            <p class="mt-2">投人次 60%</p>
+                            <p>投人教 70%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实验目标 -->
+        <section class="card p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">实验目标</h2>
+            <ul class="list-disc pl-6 text-gray-300 space-y-2">
+                <li>理解声纳系统的基本组成和工作原理，包括发射、接收和信号处理模块。</li>
+                <li>掌握不同信号类型（如连续波和脉冲信号）的性能分析方法。</li>
+                <li>学习目标检测理论，分析声纳系统在水下环境中的检测性能。</li>
+                <li>探索环境噪声和混响对声纳系统的影响，并学习优化策略。</li>
+            </ul>
+        </section>
+
+        <!-- 操作步骤 -->
+        <section class="card p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">操作步骤</h2>
+            <div class="space-y-4">
+                <div class="step-card">
+                    <h3 class="text-lg font-semibold text-white">步骤 1：设置声纳系统参数</h3>
+                    <p class="text-gray-300">打开仿真界面，设置声纳系统的发射频率、信号类型和带宽。</p>
+                </div>
+                <div class="step-card">
+                    <h3 class="text-lg font-semibold text-white">步骤 2：模拟水下环境</h3>
+                    <p class="text-gray-300">调整水深、目标距离和环境噪声水平，观察声纳信号的变化。</p>
+                </div>
+                <div class="step-card">
+                    <h3 class="text-lg font-semibold text-white">步骤 3：分析信号性能</h3>
+                    <p class="text-gray-300">比较连续波和脉冲信号的检测性能，记录信噪比（SNR）和检测概率。</p>
+                </div>
+                <div class="step-card">
+                    <h3 class="text-lg font-semibold text-white">步骤 4：优化声纳系统</h3>
+                    <p class="text-gray-300">根据仿真结果，调整参数以提高声纳系统的检测性能。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学习资源 -->
+        <section class="card p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">学习资源</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div class="border-l-4 border-blue-400 pl-4">
+                    <h3 class="font-semibold text-white mb-2">教学视频</h3>
+                    <p class="text-gray-300 text-sm">观看声纳系统设计与应用讲解视频（20分钟）。</p>
+                    <a href="#" class="hover:underline">查看视频</a>
+                </div>
+                <div class="border-l-4 border-blue-400 pl-4">
+                    <h3 class="font-semibold text-white mb-2">实验指导手册</h3>
+                    <p class="text-gray-300 text-sm">下载声纳工程实验操作指南（PDF）。</p>
+                    <a href="#" class="hover:underline">下载手册</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-[#0a1d37] text-gray-400 text-center py-6">
+        <p>© 2025 海洋信息实验教学平台. 保留所有权利.</p>
+    </footer>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 动态更新导航栏
+        function updateNav() {
+            const authBtn = document.getElementById('authBtn');
+            const user_id = localStorage.getItem('user_id');
+            if (user_id) {
+                authBtn.textContent = '退出';
+                authBtn.onclick = () => {
+                    localStorage.removeItem('user_id');
+                    alert('已退出登录');
+                    updateNav();
+                };
+            } else {
+                authBtn.textContent = '登录';
+                authBtn.onclick = showModal;
+            }
+        }
+
+        // 显示弹窗
+        const modal = document.getElementById('authModal');
+        const closeBtn = document.querySelector('.close-btn');
+        const modalTitle = document.getElementById('modalTitle');
+        const toggleModeLink = document.getElementById('toggleModeLink');
+        const toggleModeText = document.getElementById('toggleModeText');
+        const modalLoginBtn = document.getElementById('modalLoginBtn');
+        const modalRegisterBtn = document.getElementById('modalRegisterBtn');
+        let isLoginMode = true;
+
+        function showModal() {
+            modal.style.display = 'flex';
+            isLoginMode = true;
+            updateModalContent();
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            modal.style.display = 'none';
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalEmail').value = '';
+        }
+
+        // 更新弹窗内容（登录/注册模式切换）
+        function updateModalContent() {
+            if (isLoginMode) {
+                modalTitle.textContent = '登录';
+                modalLoginBtn.style.display = 'block';
+                modalRegisterBtn.style.display = 'none';
+                toggleModeText.textContent = '还没有账号？ ';
+                toggleModeLink.textContent = '立即注册';
+            } else {
+                modalTitle.textContent = '注册';
+                modalLoginBtn.style.display = 'none';
+                modalRegisterBtn.style.display = 'block';
+                toggleModeText.textContent = '已有账号？ ';
+                toggleModeLink.textContent = '立即登录';
+            }
+        }
+
+        // 切换登录/注册模式
+        toggleModeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            updateModalContent();
+        });
+
+        // 关闭弹窗事件
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // 登录逻辑
+        modalLoginBtn.addEventListener('click', () => {
+            const user_id = localStorage.getItem('user_id');
+            if (user_id) {
+                alert('您已登录！');
+                closeModal();
+                window.location.href = 'personal_center.html';
+            } else {
+                alert('请先注册！');
+                isLoginMode = false;
+                updateModalContent();
+            }
+        });
+
+        // 注册逻辑
+        modalRegisterBtn.addEventListener('click', () => {
+            const username = document.getElementById('modalUsername').value;
+            const email = document.getElementById('modalEmail').value;
+
+            if (!username || !email) {
+                alert('用户名和邮箱不能为空！');
+                return;
+            }
+
+            fetch('http://localhost:3001/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.setItem('user_id', data.user_id);
+                    alert('注册成功！');
+                    closeModal();
+                    updateNav();
+                    window.location.href = 'personal_center.html';
+                })
+                .catch(error => {
+                    console.error('注册失败:', error);
+                    alert('注册失败，请重试！');
+                });
+        });
+
+        // 页面加载时更新导航栏
+        document.addEventListener('DOMContentLoaded', updateNav);
+
+        const startExperimentBtn = document.getElementById('startExperiment');
+
+        startExperimentBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // 阻止默认跳转
+            const user_id = localStorage.getItem('user_id');
+            if (!user_id) {
+                alert('请先登录或注册');
+                showModal();
+                return;
+            }
+            const course_id = 'course2';
+
+            fetch('http://localhost:3001/complete-course', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id, course_id })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.href = 'experiment_sonar.html'; // 完成后再跳转
+                })
+                .catch(error => {
+                    console.error('记录课程完成失败:', error);
+                    alert('记录失败，请重试');
+                });
+        });
+
+        // 生成漂浮粒子（气泡）
+        function createBubbles() {
+            const waveBg = document.querySelector('.wave-bg');
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                const size = Math.random() * 10 + 5;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                waveBg.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        // 声波环跟随鼠标
+        const sonarWaves = document.querySelectorAll('.sonar-wave');
+        document.addEventListener('mousemove', (e) => {
+            sonarWaves.forEach(wave => {
+                wave.style.left = `${e.clientX}px`;
+                wave.style.top = `${e.clientY}px`;
+            });
+        });
+    </script>
+</body>
+</html>
